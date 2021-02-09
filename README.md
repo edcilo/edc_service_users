@@ -5,6 +5,8 @@ Create and customize .env file
 cp .env.example .env
 ```
 
+Customize docker-compose.yml file
+
 Build docker image
 ```
 docker-compose build
@@ -29,7 +31,7 @@ DATABASES = {
         'NAME': 'your_db_name',
         'USER': 'your_db_user',
         'PASSWORD': 'your_password',
-        'HOST': 'edc_psql',
+        'HOST': 'psql',
         'PORT': 5432,
     }
 }

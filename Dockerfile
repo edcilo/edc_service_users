@@ -13,6 +13,8 @@ RUN apk update \
         python3-dev \
         zlib-dev
 
+RUN /usr/local/bin/python -m pip install --upgrade pip
+
 RUN mkdir /code
 WORKDIR /code
 
