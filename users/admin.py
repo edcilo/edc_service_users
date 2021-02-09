@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.db import models
+from django_json_widget.widgets import JSONEditorWidget
 from .models import User
 
 
@@ -23,4 +25,8 @@ class UserAdmin(admin.ModelAdmin):
         'deleted_at',
     )
 
-    readonly_fields = ('date_joined', 'updated_at',)
+    readonly_fields = ('date_joined', 'updated_at', 'deleted_at',)
+
+    formfield_overrides = {
+        models.JSONField: {'widget': JSONEditorWidget},
+    }
