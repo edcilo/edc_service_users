@@ -5,6 +5,7 @@ env = environ.Env(
     APP_ENV=(str, 'dev'),
     APP_DEBUG=(bool, True),
     APP_SECRET_KEY=(str, None),
+    APP_JWT_KEY=(str, None),
     APP_PORT=(int, 80),
     ALLOWED_HOSTS=(list, 'localhost'),
     APP_HOME_REDIRECT_TO=(str, 'http://localhost'),
