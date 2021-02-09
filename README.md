@@ -1,6 +1,14 @@
 ## Build Image
 
-`docker-compose build`
+Create and customize .env file
+```
+cp .env.example .env
+```
+
+Build docker image
+```
+docker-compose build
+```
 
 ## Start a new project
 
