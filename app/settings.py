@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 import os
 
 from pathlib import Path
+from .environ import env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,12 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'odg1*#*e9bxgu$71jzs(e_v8v+ldpqr8$z%@&1d!=c4!09hqmq'
+SECRET_KEY = env('APP_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('APP_DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 
 
 # Application definition
@@ -39,11 +40,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'corsheaders',
+    'django_json_widget',
+    'ckeditor',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -78,11 +84,11 @@ WSGI_APPLICATION = 'app.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'users',
-        'USER': 'admin',
-        'PASSWORD': 'secret',
-        'HOST': 'users_psql',
-        'PORT': 5432,
+        'NAME': env('APP_DB_NAME'),
+        'USER': env('APP_DB_USER'),
+        'PASSWORD': env('APP_DB_PASS'),
+        'HOST': env('APP_DB_HOST'),
+        'PORT': env('APP_DB_PORT'),
     }
 }
 
@@ -109,9 +115,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = env('APP_LANG')
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = env('APP_TIME_ZONE')
 
 USE_I18N = True
 
@@ -126,3 +132,46 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+
+# django-cors-headers configuration
+# https://github.com/adamchainz/django-cors-headers
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+# restringir por dominio
+"""
+CORS_ALLOWED_ORIGINS =  [
+    "http://localhost",
+    "http://localhost:8082",
+    "http://edcilodev.com:8000",
+]
+"""
+
+
+# redis connection
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": env('REDIS_CONNECTION'),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient"
+        }
+    }
+}
+
+# Cache time to live is 15 minutes.
+CACHE_TTL = 60 * 15
+
+# SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+
+
+# MAIL SETTINGS
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = env('APP_EMAIL_HOST')
+EMAIL_PORT = env('APP_EMAIL_PORT')
+EMAIL_HOST_USER = env('APP_EMAIL_USER')
+EMAIL_HOST_PASSWORD = env('APP_EMAIL_PASS')
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
