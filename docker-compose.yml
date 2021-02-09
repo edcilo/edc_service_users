@@ -47,7 +47,7 @@ services:
         image: redis:6
         restart: always
         networks:
-            - hitNet
+            - djangoNet
 
 networks:
     djangoNet:
