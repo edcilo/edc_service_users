@@ -1,11 +1,11 @@
 ## Build Image
 
+Customize docker-compose.yml file
+
 Create and customize .env file
 ```
 cp .env.example .env
 ```
-
-Customize docker-compose.yml file
 
 Build docker image
 ```
@@ -17,7 +17,7 @@ docker-compose build
 Change `composeexample` for the name of your project
 
 ```
-docker-compose run hits_django django-admin startproject composeexample .
+docker-compose run users_django django-admin startproject app .
 ```
 
 ## Configure the database in the new project

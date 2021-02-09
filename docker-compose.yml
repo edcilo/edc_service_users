@@ -1,36 +1,36 @@
 version: "3.3"
 
 services:
-    psql:
-        container_name: psql
+    users_psql:
+        container_name: users_psql
         image: postgres
         restart: always
         ports:
             - ${APP_DB_PORT:-5432}:5432
         volumes:
-            - psqlVolume:/var/lib/postgresql/data
+            - usersPsqlVolume:/var/lib/postgresql/data
         environment:
-            POSTGRES_DB: ${APP_DB_NAME:-hits}
+            POSTGRES_DB: ${APP_DB_NAME:-users}
             POSTGRES_USER: ${APP_DB_USER:-admin}
             POSTGRES_PASSWORD: ${APP_DB_PASS:-secret}
         networks:
-            - djangoNet
+            - usersNet
 
-    django:
-        container_name: django
+    users_django:
+        container_name: users_django
         build: .
         volumes:
             - ./docker/django/static:/code/static
             - .:/code
         depends_on:
-            - psql
+            - users_psql
         env_file:
             - .env
         networks:
-            - djangoNet
+            - usersNet
 
-    nginx:
-        container_name: nginx
+    users_nginx:
+        container_name: users_nginx
         image: nginx:alpine
         volumes:
             - ./docker/nginx/sites:/etc/nginx/conf.d
@@ -38,20 +38,20 @@ services:
         ports:
             - ${APP_PORT:-80}:80
         depends_on:
-            - django
+            - users_django
         networks:
-            - djangoNet
+            - usersNet
 
-    redis:
-        container_name: redis
+    users_redis:
+        container_name: users_redis
         image: redis:6
         restart: always
         networks:
-            - djangoNet
+            - usersNet
 
 networks:
-    djangoNet:
+    usersNet:
         driver: "bridge"
 
 volumes:
-    psqlVolume:
+    usersPsqlVolume:
