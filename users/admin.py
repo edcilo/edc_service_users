@@ -11,6 +11,7 @@ class UserAdmin(admin.ModelAdmin):
     list_display_links = ('pk', 'username', 'email')
 
     search_fields = (
+        'uuid',
         'email',
         'username',
         'first_name',
@@ -25,14 +26,14 @@ class UserAdmin(admin.ModelAdmin):
         'deleted_at',
     )
 
-    readonly_fields = ('password',)
+    readonly_fields = ('uuid', 'password',)
 
     formfield_overrides = {
         models.JSONField: {'widget': JSONEditorWidget},
     }
 
     fieldsets = (
-        (None, {'fields': ('username', 'password',)}),
+        (None, {'fields': ('uuid', 'username', 'password',)}),
         ('User info', {'fields': ('first_name', 'last_name', 'email', 'phone', 'metadata')}),
         ('Account', {'fields': ('is_active', 'activated_at', 'date_joined', 'updated_at', 'last_login',)}),
         ('Warning', {'fields': ('deleted', 'deleted_at'), 'classes': ('collapse',)}),
