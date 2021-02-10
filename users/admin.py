@@ -25,8 +25,16 @@ class UserAdmin(admin.ModelAdmin):
         'deleted_at',
     )
 
-    readonly_fields = ('date_joined', 'updated_at', 'deleted_at',)
+    readonly_fields = ('password',)
 
     formfield_overrides = {
         models.JSONField: {'widget': JSONEditorWidget},
     }
+
+    fieldsets = (
+        (None, {'fields': ('username', 'password',)}),
+        ('User info', {'fields': ('first_name', 'last_name', 'email', 'phone', 'metadata')}),
+        ('Account', {'fields': ('is_active', 'activated_at', 'date_joined', 'updated_at', 'last_login',)}),
+        ('Warning', {'fields': ('deleted', 'deleted_at'), 'classes': ('collapse',)}),
+        ('Django ACL', {'fields': ('is_staff', 'is_superuser', 'user_permissions',), 'classes': ('collapse',)})
+    )
