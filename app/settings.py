@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
+    'django_rest_resetpassword',
     'corsheaders',
     'django_json_widget',
     'ckeditor',
@@ -113,6 +114,18 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+
+# https://github.com/joshuachinemezu/django-rest-resetpassword
+DJANGO_REST_MULTITOKENAUTH_RESET_TOKEN_EXPIRY_TIME = 1
+DJANGO_REST_RESETPASSWORD_TOKEN_CONFIG = {
+    "CLASS": "django_rest_resetpassword.tokens.RandomStringTokenGenerator",
+    "OPTIONS": {
+        "min_length": 64,
+        "max_length": 64
+    }
+}
+
 
 AUTH_USER_MODEL = 'users.User'
 
