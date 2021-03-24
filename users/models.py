@@ -1,7 +1,9 @@
 import users.settings as settings
 import uuid
+from datetime import datetime, timedelta
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
 
 
 # Create your models here.
@@ -18,6 +20,11 @@ class User(AbstractUser):
     deleted = models.BooleanField(default=False)
     deleted_at = models.DateTimeField(null=True)
 
+    def save(self, *args, **kwargs):
+        self.updated_at = timezone.now()
+
+        super().save(*args, **kwargs)
+
 
 class ActivationToken(models.Model):
     email = models.CharField(max_length=255)
@@ -27,3 +34,8 @@ class ActivationToken(models.Model):
 
     def __str__(self):
         return self.email
+
+    def is_valid(self):
+        limit = self.created + timedelta(seconds=self.lifetime)
+        now = timezone.now()
+        return limit > now

@@ -1,14 +1,17 @@
 import secrets
 import users.settings as settings
+from datetime import datetime
 from django.core.mail import EmailMultiAlternatives
+from django.http import Http404
 from django.template.loader import render_to_string
+from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializers import CustomTokenObtainPairSerializer, UserSignUpSerializer
+from .serializers import CustomTokenObtainPairSerializer, UserSignUpSerializer, UserConfirmSerializer
 from .models import User, ActivationToken
 
 
@@ -57,6 +60,31 @@ class UserViewSet(viewsets.GenericViewSet):
             msg.send()
 
         return Response(None, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['post'], name='confirm')
+    def confirm(self, request):
+        serializer = UserConfirmSerializer(data=request.data, context={"request": self.request})
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            token = ActivationToken.objects.filter(
+                token=serializer.data['token'],
+                email=serializer.data['email']
+            ).first()
+
+            if token.is_valid():
+                user = User.objects.filter(email=token.email, is_active=False).first()
+                user.is_active = True
+                user.activated_at = timezone.now()
+                user.save()
+            else:
+                raise Http404
+
+            token.delete()
+        except (ActivationToken.DoesNotExist, User.DoesNotExist,):
+            raise Http404
+
+        return Response(None, status=status.HTTP_200_OK)
 
 
 class HelloView(APIView):

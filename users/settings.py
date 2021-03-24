@@ -14,4 +14,5 @@ USERS_ACTIVATION_TOKEN_LIFETIME = 600
 USERS_ACTIVATION_REQUIRED = False
 
 # USERS_ACTIVATION_URL: Url to use in email verification
-USERS_ACTIVATION_URL = 'https://edcilo.com/confirmation_account'
+USERS_ACTIVATION_URL = 'https://edcilo.com/confirm'
+    
