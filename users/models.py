@@ -1,3 +1,4 @@
+import users.settings as settings
 import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
@@ -16,3 +17,13 @@ class User(AbstractUser):
     updated_at = models.DateTimeField(null=True)
     deleted = models.BooleanField(default=False)
     deleted_at = models.DateTimeField(null=True)
+
+
+class ActivationToken(models.Model):
+    email = models.CharField(max_length=255)
+    token = models.CharField(max_length=255)
+    created = models.DateTimeField(auto_now_add=True)
+    lifetime = models.PositiveSmallIntegerField(default=settings.USERS_ACTIVATION_TOKEN_LIFETIME)
+
+    def __str__(self):
+        return self.email

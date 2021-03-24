@@ -1,0 +1,7 @@
+Welcome to edcilo.com
+
+For activate your account, click in the next link.
+
+{{ link }}
+
+edcilo.com
