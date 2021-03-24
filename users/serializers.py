@@ -69,3 +69,7 @@ class UserSignUpSerializer(serializers.Serializer):
 class UserConfirmSerializer(serializers.Serializer):
     email = serializers.EmailField()
     token = serializers.CharField()
+
+
+class UserRequestConfirmEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()

@@ -11,11 +11,38 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializers import CustomTokenObtainPairSerializer, UserSignUpSerializer, UserConfirmSerializer
+from .serializers import (
+    CustomTokenObtainPairSerializer,
+    UserSignUpSerializer,
+    UserConfirmSerializer,
+    UserRequestConfirmEmailSerializer,
+)
 from .models import User, ActivationToken
 
 
 # Create your views here.
+def create_token_and_send(user):
+    token = ActivationToken.objects.create(
+        email=user.email,
+        token=secrets.token_hex(32),
+        lifetime=settings.USERS_ACTIVATION_TOKEN_LIFETIME
+    )
+
+    context = {
+        'link': "{}?token={}&email={}".format(settings.USERS_ACTIVATION_URL, token.token, user.email)
+    }
+    email_html_message = render_to_string('emails/user_activation_token.html', context)
+    email_plaintext_message = render_to_string('emails/user_activation_token.txt', context)
+    msg = EmailMultiAlternatives(
+        "Activate your account for {title}".format(title="edcilo.com"),
+        email_plaintext_message,
+        "noreply@edcilo.com",
+        [user.email]
+    )
+    msg.attach_alternative(email_html_message, "text/html")
+    msg.send()
+
+
 class CustomObtainTokenPairView(TokenObtainPairView):
     permission_classes = (AllowAny,)
     serializer_class = CustomTokenObtainPairSerializer
@@ -39,25 +66,7 @@ class UserViewSet(viewsets.GenericViewSet):
         user = serializer.save()
 
         if settings.USERS_ACTIVATION_ON and settings.USERS_SEND_ACTIVATION_EMAIL:
-            token = ActivationToken.objects.create(
-                email=user.email,
-                token=secrets.token_hex(32),
-                lifetime=settings.USERS_ACTIVATION_TOKEN_LIFETIME
-            )
-
-            context = {
-                'link': "{}?token={}&email={}".format(settings.USERS_ACTIVATION_URL, token.token, user.email)
-            }
-            email_html_message = render_to_string('emails/user_activation_token.html', context)
-            email_plaintext_message = render_to_string('emails/user_activation_token.txt', context)
-            msg = EmailMultiAlternatives(
-                "Activate your account for {title}".format(title="edcilo.com"),
-                email_plaintext_message,
-                "noreply@edcilo.com",
-                [user.email]
-            )
-            msg.attach_alternative(email_html_message, "text/html")
-            msg.send()
+            create_token_and_send(user)
 
         return Response(None, status=status.HTTP_201_CREATED)
 
@@ -73,7 +82,7 @@ class UserViewSet(viewsets.GenericViewSet):
             ).first()
 
             if token.is_valid():
-                user = User.objects.filter(email=token.email, is_active=False).first()
+                user = User.objects.filter(email=token.email, is_active=False, deleted=False).first()
                 user.is_active = True
                 user.activated_at = timezone.now()
                 user.save()
@@ -82,6 +91,23 @@ class UserViewSet(viewsets.GenericViewSet):
 
             token.delete()
         except (ActivationToken.DoesNotExist, User.DoesNotExist,):
+            raise Http404
+
+        return Response(None, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['post'], name='request_confirm')
+    def requestConfirm(self, request):
+        serializer = UserRequestConfirmEmailSerializer(data=request.data, context={"request": self.request})
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            user = User.objects.filter(email=serializer.data['email'], is_active=False, deleted=False).first()
+        except User.DoesNotExist:
+            raise Http404
+
+        if not user is None:
+            create_token_and_send(user)
+        else:
             raise Http404
 
         return Response(None, status=status.HTTP_200_OK)
