@@ -1,5 +1,4 @@
 # https://github.com/django/django/blob/main/django/contrib/auth/models.py
-
 import users.settings as settings
 import uuid
 from datetime import datetime, timedelta
