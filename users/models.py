@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime, timedelta
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.http import Http404
 from django.utils import timezone
 
 
@@ -36,7 +37,10 @@ class ActivationToken(models.Model):
     def __str__(self):
         return self.email
 
-    def is_valid(self):
+    def is_valid(self, raise_exception=False):
         limit = self.created + timedelta(seconds=self.lifetime)
         now = timezone.now()
-        return limit > now
+        is_valid = limit > now
+        if raise_exception and not is_valid:
+            raise Http404
+        return is_valid
