@@ -96,7 +96,7 @@ class UserViewSet(viewsets.GenericViewSet):
         return Response(None, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'], name='request_confirm')
-    def requestConfirm(self, request):
+    def request_confirm(self, request):
         serializer = UserRequestConfirmEmailSerializer(data=request.data, context={"request": self.request})
         serializer.is_valid(raise_exception=True)
 
