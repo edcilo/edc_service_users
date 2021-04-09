@@ -1,3 +1,5 @@
+# https://github.com/django/django/blob/main/django/contrib/auth/models.py
+
 import users.settings as settings
 import uuid
 from datetime import datetime, timedelta
@@ -14,10 +16,10 @@ class User(AbstractUser):
 
     uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     phone = models.CharField(null=True, max_length=20)
-    activated_at = models.DateTimeField(null=True)
     metadata = models.JSONField(null=True)
+    confirmed = models.BooleanField(default=False)
+    confirmed_at = models.DateTimeField(null=True)
     updated_at = models.DateTimeField(null=True)
-    deleted = models.BooleanField(default=False)
     deleted_at = models.DateTimeField(null=True)
 
     def save(self, *args, **kwargs):
@@ -30,7 +32,7 @@ class ActivationToken(models.Model):
     email = models.CharField(max_length=255)
     token = models.CharField(max_length=255)
     created = models.DateTimeField(auto_now_add=True)
-    lifetime = models.PositiveSmallIntegerField(default=settings.USERS_ACTIVATION_TOKEN_LIFETIME)
+    lifetime = models.PositiveSmallIntegerField(default=settings.ACCOUNT_CONFIRM_TOKEN_LIFETIME)
 
     def __str__(self):
         return self.email
