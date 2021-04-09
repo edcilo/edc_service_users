@@ -1,7 +1,6 @@
 import secrets
 import users.settings as settings
 from django.http import Http404
-from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -10,6 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import User, ActivationToken
 from .emails import AccountConfirmEmail
+from .repositories import UserRepository, ActivationTokenRepository
 from .serializers import (
     CustomTokenObtainPairSerializer,
     UserSignUpSerializer,
@@ -48,30 +48,23 @@ class UserViewSet(viewsets.GenericViewSet):
 
     @action(detail=False, methods=['post'], name='confirm')
     def confirm(self, request):
+        token_repo = ActivationTokenRepository()
+        user_repo = UserRepository()
+
         if not settings.ACCOUNT_CONFIRM_ON:
             raise Http404
 
         serializer = UserConfirmSerializer(data=request.data, context={"request": self.request})
         serializer.is_valid(raise_exception=True)
 
-        try:
-            token = ActivationToken.objects.filter(
-                token=serializer.data['token'],
-                email=serializer.data['email']
-            ).first()
-
-            if token.is_valid():
-                user = User.objects.filter(email=token.email, is_active=True, confirmed=False).first()
-                user.confirmed = True
-                user.confirmed_at = timezone.now()
-                user.save()
-            else:
-                raise Http404
-
-            token.delete()
-        except (ActivationToken.DoesNotExist, User.DoesNotExist,):
+        token = token_repo.check_token_and_email(serializer.data['token'], serializer.data['email'], fail=True)
+        if not token.is_valid():
             raise Http404
 
+        user = user_repo.get_user_unconfirmed(token.email, fail=True)
+        user_repo.account_confirm(user)
+
+        token.delete()
         return Response(None, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'], name='request_confirm')
