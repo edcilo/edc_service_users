@@ -15,12 +15,12 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['username']
 
     uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
-    phone = models.CharField(null=True, max_length=20)
-    metadata = models.JSONField(null=True)
+    phone = models.CharField(null=True, max_length=20, blank=True)
+    metadata = models.JSONField(null=True, blank=True)
     confirmed = models.BooleanField(default=False)
-    confirmed_at = models.DateTimeField(null=True)
+    confirmed_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(null=True)
-    deleted_at = models.DateTimeField(null=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.updated_at = timezone.now()
