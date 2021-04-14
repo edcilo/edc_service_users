@@ -1,7 +1,7 @@
 # https://github.com/django/django/blob/main/django/contrib/auth/models.py
 import users.settings as settings
 import uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.http import Http404
@@ -21,6 +21,25 @@ class User(AbstractUser):
     confirmed_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(null=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
+
+    @property
+    def is_banned(self):
+        now = timezone.now()
+        current_strikes = self.strikes.filter(active=True, banned_at__lte=now, banned_until__gte=now).count()
+        total_strikes = self.strikes.filter(active=True).count()
+        return current_strikes > 0 or total_strikes >= settings.BAN_STRIKES_ALLOWED
+
+    @property
+    def ban_info(self):
+        now = timezone.now()
+        ban = self.strikes.filter(active=True, banned_at__lte=now, banned_until__gte=now).first()
+
+        return {
+            'is_banned': ban is not None,
+            'strikes': self.strikes.filter(active=True).count(),
+            'banned_until': None if ban is None else ban.banned_until.isoformat(),
+            'banned_reason': None if ban is None else ban.reason.description,
+        }
 
     def save(self, *args, **kwargs):
         self.updated_at = timezone.now()
@@ -44,3 +63,24 @@ class ActivationToken(models.Model):
         if raise_exception and not is_valid:
             raise Http404
         return is_valid
+
+
+class BanReason(models.Model):
+    code = models.CharField(max_length=64)
+    description = models.CharField(max_length=255)
+    days = models.IntegerField()
+
+    def __str__(self):
+        return "%s - %s" % (self.code, self.description)
+
+
+class Ban(models.Model):
+    active = models.BooleanField(default=True)
+    banned_at = models.DateTimeField()
+    banned_until = models.DateTimeField(null=True, blank=True)
+    description = models.TextField()
+    reason = models.ForeignKey(BanReason, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='strikes')
+
+    def __str__(self):
+        return self.description

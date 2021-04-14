@@ -2,6 +2,7 @@ import users.settings as settings
 from django.contrib.auth import password_validation
 from django.utils.translation import gettext as _
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import User
@@ -11,6 +12,9 @@ from .exceptions import AccountNotConfirmedAPIException
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
+        if not settings.BAN_ALLOW_LOGIN and user.is_banned:
+            raise PermissionDenied()
+
         if settings.ACCOUNT_CONFIRM_ON and settings.ACCOUNT_CONFIRM_REQUIRED:
             if not user.is_superuser and not user.confirmed:
                 raise AccountNotConfirmedAPIException()
@@ -21,6 +25,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['username'] = user.username
         token['confirmed'] = user.confirmed
         token['deleted'] = not user.is_active
+        token['ban'] = user.ban_info
 
         return token
 

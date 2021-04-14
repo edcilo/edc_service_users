@@ -15,3 +15,12 @@ ACCOUNT_CONFIRM_REQUIRED = True
 
 # Url to use in email verification
 ACCOUNT_CONFIRM_URL = 'https://edcilo.com/confirm'
+
+# If True the user banned can log in
+BAN_ALLOW_LOGIN = True
+
+# Number of strikes to close the account
+BAN_STRIKES_ALLOWED = 3
+
+# If True the banned user can modify his profile
+BAN_ALLOW_ACCOUNT = False

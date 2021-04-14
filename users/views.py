@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import User
+from .permissions import IsNotBanned
 from .repositories import UserRepository, ActivationTokenRepository
 from .serializers import (
     CustomTokenObtainPairSerializer,
@@ -32,8 +33,8 @@ class UserViewSet(viewsets.GenericViewSet):
     def get_permissions(self):
         permission_classes = []
 
-        if self.name == 'register':
-            permission_classes = ()
+        if self.name == 'profile':
+            permission_classes = [IsAuthenticated, IsNotBanned]
 
         return [permission() for permission in permission_classes]
 
@@ -76,6 +77,11 @@ class UserViewSet(viewsets.GenericViewSet):
         token_repo.new_and_notify(user)
 
         return Response(None, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], name='profile')
+    def profile(self, request):
+        print(request)
+        return Response(None)
 
 
 class HelloView(APIView):

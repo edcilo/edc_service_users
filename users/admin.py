@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.db import models
 from django_json_widget.widgets import JSONEditorWidget
-from .models import User
+from .models import User, BanReason, Ban
 
 
 # Register your models here.
@@ -37,5 +37,33 @@ class UserAdmin(admin.ModelAdmin):
         ('User info', {'fields': ('first_name', 'last_name', 'email', 'phone', 'metadata')}),
         ('Account', {'fields': ('confirmed', 'confirmed_at', 'date_joined', 'updated_at', 'last_login',)}),
         ('Warning', {'fields': ('is_active', 'deleted_at'), 'classes': ('collapse',)}),
-        ('Django ACL', {'fields': ('is_staff', 'is_superuser', 'user_permissions',), 'classes': ('collapse',)})
+        ('Django ACL', {'fields': ('is_staff', 'is_superuser', 'user_permissions',), 'classes': ('collapse',)}),
+    )
+
+
+@admin.register(BanReason)
+class BanReasonAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'code', 'description','days',)
+    list_display_links = ('pk', 'code',)
+    search_fields = ('code',)
+
+
+@admin.register(Ban)
+class BanAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'user', 'reason', 'active', 'banned_until',)
+    list_display_links = ('pk',)
+
+    search_fields = (
+        'user',
+        'reason',
+    )
+
+    list_filter = (
+        'active',
+        'reason',
+        'banned_until'
+    )
+
+    fieldsets = (
+        (None, {'fields': ('user', 'reason', 'active', 'banned_at', 'banned_until', 'description')}),
     )
