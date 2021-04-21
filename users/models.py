@@ -6,6 +6,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.http import Http404
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 
 # Create your models here.
@@ -17,6 +18,7 @@ class User(AbstractUser):
     uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     phone = models.CharField(null=True, max_length=20, blank=True)
     metadata = models.JSONField(null=True, blank=True)
+    public = models.BooleanField(default=True, help_text=_('Public profile'))
     confirmed = models.BooleanField(default=False)
     confirmed_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(null=True)

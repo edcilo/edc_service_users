@@ -13,6 +13,7 @@ from .serializers import (
     CustomTokenObtainPairSerializer,
     UserSignUpSerializer,
     UserConfirmSerializer,
+    UserModelSerializer,
     UserRequestConfirmEmailSerializer,
 )
 
@@ -80,8 +81,17 @@ class UserViewSet(viewsets.GenericViewSet):
 
     @action(detail=False, methods=['get'], name='profile')
     def profile(self, request):
-        print(request)
-        return Response(None)
+        user = request.user
+        serializer = UserModelSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['get'], name='user')
+    def user(self, request, pk=None):
+        user = user_repo.get_user_by_uuid(pk, fail=True)
+        serializer = UserModelSerializer(user)
+        if not serializer.data['public']:
+            raise Http404
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class HelloView(APIView):

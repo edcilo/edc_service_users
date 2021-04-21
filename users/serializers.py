@@ -35,17 +35,21 @@ class UserModelSerializer(serializers.ModelSerializer):
         model = User
 
         fields = (
+            'uuid',
             'username',
             'first_name',
             'last_name',
             'email',
             'phone',
-            'data_joined',
+            'public',
+            'is_staff',
             'is_active',
-            'activated_at',
-            'updated_at',
-            'deleted',
+            'confirmed',
+            'confirmed_at',
             'deleted_at',
+            'updated_at',
+            'date_joined',
+            'ban_info',
             'metadata',
         )
 

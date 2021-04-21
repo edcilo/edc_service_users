@@ -20,6 +20,12 @@ class UserRepository(Repository):
         user.confirmed_at = timezone.now()
         user.save()
 
+    def get_user_by_uuid(self, uuid, fail=False):
+        user = self.model.objects.filter(uuid=uuid).first()
+        if fail and user is None:
+            raise Http404
+        return user
+
     def get_user_unconfirmed(self, email, fail=False):
         user = self.model.objects.filter(email=email, is_active=True, confirmed=False).first()
         if fail and user is None:

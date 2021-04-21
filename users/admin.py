@@ -34,7 +34,7 @@ class UserAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {'fields': ('uuid', 'username', 'password',)}),
-        ('User info', {'fields': ('first_name', 'last_name', 'email', 'phone', 'metadata')}),
+        ('User info', {'fields': ('public', 'first_name', 'last_name', 'email', 'phone', 'metadata')}),
         ('Account', {'fields': ('confirmed', 'confirmed_at', 'date_joined', 'updated_at', 'last_login',)}),
         ('Warning', {'fields': ('is_active', 'deleted_at'), 'classes': ('collapse',)}),
         ('Django ACL', {'fields': ('is_staff', 'is_superuser', 'user_permissions',), 'classes': ('collapse',)}),
