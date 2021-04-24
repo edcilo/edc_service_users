@@ -7,7 +7,7 @@ from . import views
 app_name = 'users'
 
 router = DefaultRouter()
-router.register(r'', views.UserViewSet, basename='users')
+router.register(r'', views.AccountViewSet, basename='account')
 
 urlpatterns = [
     path('api/v1/password-reset/', include('django_rest_resetpassword.urls', namespace='password_reset')),
@@ -16,4 +16,7 @@ urlpatterns = [
     path('api/v1/token/verify/', jwt_views.TokenVerifyView.as_view(), name='token_verify'),
     path('api/v1/', include(router.urls)),
     path('hello/', views.HelloView.as_view(), name='hello'),
+
+    path('api/v1/profile/', views.ProfileViewSet.as_view()),
+    path('api/v1/<str:uuid>/profile/', views.UserViewSet.as_view()),
 ]

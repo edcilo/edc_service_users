@@ -15,6 +15,7 @@ from .serializers import (
     UserConfirmSerializer,
     UserModelSerializer,
     UserRequestConfirmEmailSerializer,
+    UserProfileSerializer,
 )
 
 
@@ -28,9 +29,7 @@ class CustomObtainTokenPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 
-class UserViewSet(viewsets.GenericViewSet):
-    queryset = User.objects.filter()
-
+class AccountViewSet(viewsets.GenericViewSet):
     def get_permissions(self):
         permission_classes = []
 
@@ -79,15 +78,41 @@ class UserViewSet(viewsets.GenericViewSet):
 
         return Response(None, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=['get'], name='profile')
-    def profile(self, request):
+
+class ProfileViewSet(APIView):
+    permission_classes = [IsAuthenticated, IsNotBanned]
+
+    def get(self, request):
         user = request.user
         serializer = UserModelSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['get'], name='user')
-    def user(self, request, pk=None):
-        user = user_repo.get_user_by_uuid(pk, fail=True)
+    def put(self, request):
+        user = request.user
+        data = request.data
+
+        serializer = UserProfileSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        updated = user_repo.update_profile(user.uuid, data)
+
+        if updated:
+            return Response(None, status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(None, status=status.HTTP_304_NOT_MODIFIED)
+
+    def delete(self, request):
+        user = request.user
+        deleted = user_repo.soft_delete(user.uuid)
+
+        if deleted:
+            return Response(None, status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(None, status=status.HTTP_304_NOT_MODIFIED)
+
+
+class UserViewSet(APIView):
+    def get(self, request, uuid=None):
+        user = user_repo.get_user_by_uuid(uuid, fail=True)
         serializer = UserModelSerializer(user)
         if not serializer.data['public']:
             raise Http404

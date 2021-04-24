@@ -21,7 +21,7 @@ class UserRepository(Repository):
         user.save()
 
     def get_user_by_uuid(self, uuid, fail=False):
-        user = self.model.objects.filter(uuid=uuid).first()
+        user = self.model.objects.filter(uuid=uuid, is_active=True).first()
         if fail and user is None:
             raise Http404
         return user
@@ -31,6 +31,15 @@ class UserRepository(Repository):
         if fail and user is None:
             raise Http404
         return user
+
+    def soft_delete(self, uuid):
+        return self.model.objects.filter(uuid=uuid).update(is_active=False, deleted_at=timezone.now())
+
+    def update_profile(self, uuid, data):
+        profile_fields = ('first_name', 'last_name',)
+        profile_data = {k: v for k, v in data.items() if k in profile_fields }
+        profile_data['metadata'] = {k: v for k, v in data.items() if not k in profile_fields }
+        return self.model.objects.filter(uuid=uuid).update(**profile_data)
 
 
 class ActivationTokenRepository(Repository):

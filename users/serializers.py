@@ -88,3 +88,26 @@ class UserConfirmSerializer(serializers.Serializer):
 
 class UserRequestConfirmEmailSerializer(serializers.Serializer):
     email = serializers.EmailField()
+
+
+class UserProfileSerializer(serializers.Serializer):
+    first_name = serializers.CharField(
+        max_length=60,
+        allow_blank=True,
+    )
+    last_name = serializers.CharField(
+        max_length=60,
+        allow_blank=True,
+    )
+    bio = serializers.CharField(
+        max_length=320,
+        allow_blank=True,
+    )
+    birthday = serializers.DateField(
+        allow_null=True
+    )
+
+    def to_internal_value(self, data):
+        if data.get('birthday') == '':
+            data['birthday'] = None
+        return super().to_internal_value(data)
