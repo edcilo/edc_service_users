@@ -35,10 +35,15 @@ class UserRepository(Repository):
     def soft_delete(self, uuid):
         return self.model.objects.filter(uuid=uuid).update(is_active=False, deleted_at=timezone.now())
 
+    def update_account(self, uuid, data):
+        fields = ('username', 'email', 'phone', 'public')
+        account_data = {k: v for k, v in data.items() if k in fields }
+        return self.model.objects.filter(uuid=uuid).update(**account_data)
+
     def update_profile(self, uuid, data):
-        profile_fields = ('first_name', 'last_name',)
-        profile_data = {k: v for k, v in data.items() if k in profile_fields }
-        profile_data['metadata'] = {k: v for k, v in data.items() if not k in profile_fields }
+        fields = ('first_name', 'last_name',)
+        profile_data = {k: v for k, v in data.items() if k in fields }
+        profile_data['metadata'] = {k: v for k, v in data.items() if not k in fields }
         return self.model.objects.filter(uuid=uuid).update(**profile_data)
 
 

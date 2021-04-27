@@ -66,14 +66,13 @@ class UserSignUpSerializer(serializers.Serializer):
     password = serializers.CharField(min_length=8, max_length=64)
     password_confirmation = serializers.CharField(min_length=8, max_length=64)
 
-    def validate(self, data):
-        passwd = data['password']
-        passwd_conf = data['password_confirmation']
-        if passwd != passwd_conf:
+    def validate_password(self, value):
+        password = value
+        password_conf = self.initial_data['password_confirmation']
+        if password != password_conf:
             raise serializers.ValidationError(_("Passwords do not match."))
-        password_validation.validate_password(passwd)
-
-        return data
+        password_validation.validate_password(password)
+        return value
 
     def create(self, data):
         data.pop('password_confirmation')
@@ -111,3 +110,53 @@ class UserProfileSerializer(serializers.Serializer):
         if data.get('birthday') == '':
             data['birthday'] = None
         return super().to_internal_value(data)
+
+
+class UserAccountSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150,)
+    email = serializers.EmailField()
+    phone = serializers.CharField()
+    public = serializers.BooleanField()
+
+    def validate_username(self, value):
+        user = self.context['user']
+        exists = User.objects.filter(username=value).exclude(uuid=user.uuid).exists()
+        if exists:
+            raise serializers.ValidationError('This field must be unique.')
+        return value
+
+    def validate_email(self, value):
+        user = self.context['user']
+        exists = User.objects.filter(email=value).exclude(uuid=user.uuid).exists()
+        if exists:
+            raise serializers.ValidationError('This field must be unique.')
+        return value
+
+    def validate_phone(self, value):
+        user = self.context['user']
+        # TODO: validate phone number using regex?
+        exists = User.objects.filter(phone=value).exclude(uuid=user.uuid).exists()
+        if exists:
+            raise serializers.ValidationError('This field must be unique.')
+        return value
+
+
+class UserPasswordSerializer(serializers.Serializer):
+    current_password = serializers.CharField()
+    new_password = serializers.CharField(min_length=8, max_length=64)
+    password_confirmation = serializers.CharField()
+
+    def validate_current_password(self, value):
+        user = self.context['user']
+        current_password = value
+        if not user.check_password(current_password):
+            raise serializers.ValidationError(_("Current passwords is invalid."))
+        return value
+
+    def validate_new_password(self, value):
+        password = value
+        password_conf = self.initial_data['password_confirmation']
+        if password != password_conf:
+            raise serializers.ValidationError(_("Passwords do not match."))
+        password_validation.validate_password(password)
+        return value

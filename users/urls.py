@@ -15,8 +15,5 @@ urlpatterns = [
     path('api/v1/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path('api/v1/token/verify/', jwt_views.TokenVerifyView.as_view(), name='token_verify'),
     path('api/v1/', include(router.urls)),
-    path('hello/', views.HelloView.as_view(), name='hello'),
-
-    path('api/v1/profile/', views.ProfileViewSet.as_view()),
-    path('api/v1/<str:uuid>/profile/', views.UserViewSet.as_view()),
+    path('api/v1/<str:uuid>/', views.UserViewSet.as_view(), name='user'),
 ]

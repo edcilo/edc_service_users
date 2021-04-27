@@ -1,4 +1,5 @@
 import users.settings as settings
+from django.contrib.auth.hashers import make_password
 from django.http import Http404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -7,7 +8,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import User
-from .permissions import IsNotBanned
+from .permissions import IsNotBanned, IsOwner
 from .repositories import UserRepository, ActivationTokenRepository
 from .serializers import (
     CustomTokenObtainPairSerializer,
@@ -16,6 +17,8 @@ from .serializers import (
     UserModelSerializer,
     UserRequestConfirmEmailSerializer,
     UserProfileSerializer,
+    UserAccountSerializer,
+    UserPasswordSerializer,
 )
 
 
@@ -29,12 +32,12 @@ class CustomObtainTokenPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 
-class AccountViewSet(viewsets.GenericViewSet):
+class AccountViewSet(viewsets.ViewSet):
     def get_permissions(self):
         permission_classes = []
 
-        if self.name == 'profile':
-            permission_classes = [IsAuthenticated, IsNotBanned]
+        if self.name == 'profile' or self.name == 'account' or self.name == 'update_account' or self.name == 'update_password':
+            permission_classes = [IsAuthenticated, IsNotBanned, IsOwner]
 
         return [permission() for permission in permission_classes]
 
@@ -78,36 +81,54 @@ class AccountViewSet(viewsets.GenericViewSet):
 
         return Response(None, status=status.HTTP_200_OK)
 
-
-class ProfileViewSet(APIView):
-    permission_classes = [IsAuthenticated, IsNotBanned]
-
-    def get(self, request):
-        user = request.user
-        serializer = UserModelSerializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def put(self, request):
+    @action(detail=True, methods=['put', 'delete'], name='update_account')
+    def account(self, request, pk=None):
         user = request.user
         data = request.data
 
-        serializer = UserProfileSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        updated = user_repo.update_profile(user.uuid, data)
+        if request.method == 'PUT':
+            serializer = UserAccountSerializer(data=data, context={'user': user})
+            serializer.is_valid(raise_exception=True)
+            success = user_repo.update_account(user.uuid, data)
+        elif request.method == 'DELETE':
+            success = user_repo.soft_delete(user.uuid)
 
-        if updated:
+        if success:
             return Response(None, status=status.HTTP_204_NO_CONTENT)
         else:
             return Response(None, status=status.HTTP_304_NOT_MODIFIED)
 
-    def delete(self, request):
+    @action(detail=True, methods=['put'], name='update_password')
+    def update_password(self, request, pk=None):
         user = request.user
-        deleted = user_repo.soft_delete(user.uuid)
+        data = request.data
 
-        if deleted:
-            return Response(None, status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response(None, status=status.HTTP_304_NOT_MODIFIED)
+        serializer = UserPasswordSerializer(data=data, context={'user': user})
+        serializer.is_valid(raise_exception=True)
+
+        new_password = data['new_password']
+        user.set_password(new_password)
+        user.save()
+
+        return Response(None, status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['get', 'put',], name='profile')
+    def profile(self, request, pk=None):
+        user = request.user
+        data = request.data
+
+        if request.method == 'PUT':
+            serializer = UserProfileSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            updated = user_repo.update_profile(user.uuid, data)
+
+            if updated:
+                return Response(None, status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response(None, status=status.HTTP_304_NOT_MODIFIED)
+
+        serializer = UserModelSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class UserViewSet(APIView):
@@ -117,11 +138,3 @@ class UserViewSet(APIView):
         if not serializer.data['public']:
             raise Http404
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class HelloView(APIView):
-    permission_classes = (IsAuthenticated,)
-
-    def get(self, request):
-        content = {'message': 'Hello, World!'}
-        return Response(content)
