@@ -3,6 +3,7 @@ import users.settings as settings
 import uuid
 from datetime import timedelta
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import AbstractUser
 from django.http import Http404
 from django.utils import timezone
@@ -27,7 +28,11 @@ class User(AbstractUser):
     @property
     def is_banned(self):
         now = timezone.now()
-        current_strikes = self.strikes.filter(active=True, banned_at__lte=now, banned_until__gte=now).count()
+        current_strikes = self.strikes.filter(
+            Q(active=True),
+            Q(banned_at__lte=now),
+            Q(banned_until__isnull=True) | Q(banned_until__gte=now)
+        ).count()
         total_strikes = self.strikes.filter(active=True).count()
         return current_strikes > 0 or total_strikes >= settings.BAN_STRIKES_ALLOWED
 
