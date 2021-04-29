@@ -174,13 +174,15 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # django-cors-headers configuration
 # https://github.com/adamchainz/django-cors-headers
 
-CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_ALL_ORIGINS = True
 
 # restringir por dominio
+"""
 CORS_ALLOWED_ORIGINS =  [
     "https://edcilo.com",
     "http://localhost",
 ]
+"""
 
 
 # redis connection
