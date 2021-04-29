@@ -10,6 +10,7 @@ router = DefaultRouter()
 router.register(r'', views.AccountViewSet, basename='account')
 
 urlpatterns = [
+    path('', views.index, name='index'),
     path('api/v1/password-reset/', include('django_rest_resetpassword.urls', namespace='password_reset')),
     path('api/v1/token/', views.CustomObtainTokenPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),

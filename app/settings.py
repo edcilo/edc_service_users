@@ -31,6 +31,7 @@ DEBUG = env('APP_DEBUG')
 
 ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 
+HOME_REDIRECT_TO = env('APP_HOME_REDIRECT_TO')
 
 # Application definition
 

@@ -1,4 +1,5 @@
 import users.settings as settings
+from django.conf import settings as django_settings
 from django.contrib.auth.hashers import make_password
 from django.http import Http404
 from rest_framework import status, viewsets
@@ -23,6 +24,12 @@ from .serializers import (
 
 
 # Create your views here.
+@api_view(['GET'])
+def index(request):
+    REDIRECT_TO = getattr(django_settings, 'HOME_REDIRECT_TO')
+    return redirect(REDIRECT_TO)
+
+
 token_repo = ActivationTokenRepository()
 user_repo = UserRepository()
 
