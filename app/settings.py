@@ -177,13 +177,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 CORS_ALLOW_ALL_ORIGINS = True
 
 # restringir por dominio
-"""
 CORS_ALLOWED_ORIGINS =  [
+    "https://edcilo.com",
     "http://localhost",
-    "http://localhost:8082",
-    "http://edcilodev.com:8000",
 ]
-"""
 
 
 # redis connection
