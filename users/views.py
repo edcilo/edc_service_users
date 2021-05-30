@@ -8,6 +8,7 @@ from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import User
 from .permissions import IsNotBanned, IsOwner
@@ -57,6 +58,13 @@ class AccountViewSet(viewsets.ViewSet):
 
         if settings.ACCOUNT_CONFIRM_ON and settings.SEND_ACCOUNT_CONFIRM_EMAIL:
             token_repo.new_and_notify(user)
+
+        if settings.RETURN_TOKEN_IN_REGISTER:
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }, status=status.HTTP_200_OK)
 
         return Response(None, status=status.HTTP_201_CREATED)
 

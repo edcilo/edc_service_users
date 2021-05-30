@@ -1,5 +1,7 @@
 from app.environ import env
 
+# If True authorization token is retrieved when the user is registered
+RETURN_TOKEN_IN_REGISTER = True
 
 # If True activation flow is enabled
 ACCOUNT_CONFIRM_ON = True
