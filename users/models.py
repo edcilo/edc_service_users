@@ -55,6 +55,7 @@ class User(AbstractUser):
 
 
 class ActivationToken(models.Model):
+    id = models.BigAutoField(primary_key=True)
     email = models.CharField(max_length=255)
     token = models.CharField(max_length=255)
     created = models.DateTimeField(auto_now_add=True)
@@ -73,6 +74,7 @@ class ActivationToken(models.Model):
 
 
 class BanReason(models.Model):
+    id = models.BigAutoField(primary_key=True)
     code = models.CharField(max_length=64)
     description = models.CharField(max_length=255)
     days = models.IntegerField()
@@ -82,6 +84,7 @@ class BanReason(models.Model):
 
 
 class Ban(models.Model):
+    id = models.BigAutoField(primary_key=True)
     active = models.BooleanField(default=True)
     banned_at = models.DateTimeField()
     banned_until = models.DateTimeField(null=True, blank=True)
